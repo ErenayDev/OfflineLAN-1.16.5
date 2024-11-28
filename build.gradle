@@ -5,10 +5,10 @@ modloader {
         sources "https://github.com/Elecs-Mods/SinglePlayerServerSettings"
         mod {
             homepage "homepage"
-            logo("assets/testmod/icon.png")
+            logo("sss_icon.png")
         }
         dependsOn("minecraft") {
-            versionRange(">=1.20.4", "<1.21")
+            versionRange(">=1.20", "<1.22")
         }
     }
 
