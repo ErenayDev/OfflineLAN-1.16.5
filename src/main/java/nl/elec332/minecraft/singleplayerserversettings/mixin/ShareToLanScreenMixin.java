@@ -1,14 +1,16 @@
 package nl.elec332.minecraft.singleplayerserversettings.mixin;
 
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.CycleButton;
-import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.ShareToLanScreen;
+import com.mojang.blaze3d.matrix.MatrixStack;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screen.ShareToLanScreen;
+import net.minecraft.client.gui.widget.TextFieldWidget;
+import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.client.server.IntegratedServer;
-import net.minecraft.network.chat.Component;
-import org.spongepowered.asm.mixin.*;
-import org.spongepowered.asm.mixin.gen.Accessor;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.TranslationTextComponent;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -17,70 +19,166 @@ import java.util.Objects;
 
 /**
  * Created by Elec332 on 23-04-2024
+ * Refactored by ErenayDev
  */
 @Mixin(ShareToLanScreen.class)
 public abstract class ShareToLanScreenMixin extends Screen {
 
-    protected ShareToLanScreenMixin(Component $$0) {
-        super($$0);
-        throw new RuntimeException();
+    @Unique
+    private boolean sps$onlineMode;
+
+    @Unique
+    private boolean sps$pvpAllowed;
+
+    @Unique
+    private String sps$motd;
+
+    @Unique
+    private int sps$port = 25565;
+
+    @Unique
+    private TextFieldWidget sps$portField;
+
+    @Unique
+    private TextFieldWidget sps$motdField;
+
+    @Unique
+    private static final ITextComponent OFFLINE_MODE_ON = new StringTextComponent("Offline Mode: ON");
+
+    @Unique
+    private static final ITextComponent OFFLINE_MODE_OFF = new StringTextComponent("Offline Mode: OFF");
+
+    @Unique
+    private static final ITextComponent PVP_ON = new StringTextComponent("PvP: ON");
+
+    @Unique
+    private static final ITextComponent PVP_OFF = new StringTextComponent("PvP: OFF");
+
+    @Unique
+    private static final ITextComponent PORT_LABEL = new TranslationTextComponent("lanServer.port");
+
+    @Unique
+    private static final ITextComponent MOTD_LABEL = new StringTextComponent("MOTD");
+
+    protected ShareToLanScreenMixin(ITextComponent title) {
+        super(title);
+    }
+
+    @Inject(method = "init", at = @At("TAIL"))
+    private void sps$onInit(CallbackInfo ci) {
+        IntegratedServer server = Objects.requireNonNull(Objects.requireNonNull(this.minecraft).getSingleplayerServer());
+
+        this.sps$onlineMode = server.usesAuthentication();
+        this.sps$pvpAllowed = server.isPvpAllowed();
+        this.sps$motd = server.getMotd();
+
+        this.buttons.removeIf(b -> b.getMessage().getString().contains("Start"));
+        this.children.removeIf(c -> c instanceof Button && ((Button) c).getMessage().getString().contains("Start"));
+
+        Button offlineModeButton = new Button(
+                this.width / 2 - 155, 124, 150, 20,
+                this.sps$onlineMode ? OFFLINE_MODE_OFF : OFFLINE_MODE_ON,
+                button -> {
+                    this.sps$onlineMode = !this.sps$onlineMode;
+                    button.setMessage(this.sps$onlineMode ? OFFLINE_MODE_OFF : OFFLINE_MODE_ON);
+                }
+        );
+        this.addButton(offlineModeButton);
+
+        Button pvpButton = new Button(
+                this.width / 2 + 5, 124, 150, 20,
+                this.sps$pvpAllowed ? PVP_ON : PVP_OFF,
+                button -> {
+                    this.sps$pvpAllowed = !this.sps$pvpAllowed;
+                    button.setMessage(this.sps$pvpAllowed ? PVP_ON : PVP_OFF);
+                }
+        );
+        this.addButton(pvpButton);
+
+        this.sps$portField = new TextFieldWidget(this.font, this.width / 2 - 155, 170, 150, 20, PORT_LABEL);
+        this.sps$portField.setValue(String.valueOf(this.sps$port));
+        this.sps$portField.setResponder(s -> {
+            try {
+                this.sps$port = Integer.parseInt(s);
+            } catch (NumberFormatException ignored) {
+                this.sps$port = 25565;
+            }
+        });
+        this.children.add(this.sps$portField);
+
+        this.sps$motdField = new TextFieldWidget(this.font, this.width / 2 + 5, 170, 150, 20, MOTD_LABEL);
+        this.sps$motdField.setMaxLength(64);
+        this.sps$motdField.setValue(this.sps$motd);
+        this.sps$motdField.setResponder(s -> this.sps$motd = s);
+        this.children.add(this.sps$motdField);
+
+        Button startButton = new Button(
+                this.width / 2 - 155, 200, 150, 20,
+                new TranslationTextComponent("lanServer.start"),
+                button -> this.sps$startLanServer()
+        );
+        this.addButton(startButton);
+
+        Button cancelButton = new Button(
+                this.width / 2 + 5, 200, 150, 20,
+                new TranslationTextComponent("gui.cancel"),
+                button -> this.minecraft.setScreen(null)
+        );
+        this.addButton(cancelButton);
     }
 
     @Unique
-    private boolean onlineMode;
-    @Unique
-    private boolean pvpAllowed;
-    @Unique
-    private String motd;
+    private void sps$startLanServer() {
+        IntegratedServer server = Objects.requireNonNull(Objects.requireNonNull(this.minecraft).getSingleplayerServer());
 
-    @Unique
-    private static final Component OFFLINE_MODE = Component.literal("Offline Mode");
-    @Unique
-    private static final Component PVP_ALLOWED = Component.literal("PvP Allowed");
-    @Unique
-    private static final Component MOTD = Component.literal("MOTD");
-//    @Final @Shadow //TODO: Find out why @Shadow doesn't work, but it's midnight and I can't be fucked atm...
-    @Unique
-    private static final Component PORT_INFO_TEXT_ = Component.translatable("lanServer.port");
+        server.setUsesAuthentication(this.sps$onlineMode);
+        server.setPvpAllowed(this.sps$pvpAllowed);
+        server.setMotd(this.sps$motd);
 
-    @Accessor("portEdit")
-    protected abstract EditBox getBox();
+        String result = server.publishServer(
+                this.minecraft.options.renderDebug ? net.minecraft.world.GameType.SPECTATOR : server.getDefaultGameType(),
+                false,
+                this.sps$port
+        );
 
-    @Accessor("port")
-    protected abstract void setPort(int i);
+        ITextComponent message;
+        if (result != null) {
+            message = new TranslationTextComponent("commands.publish.started", this.sps$port);
+            this.minecraft.gui.getChat().addMessage(
+                    new StringTextComponent("")
+                            .append("Offline Mode: " + !this.sps$onlineMode + " | ")
+                            .append("PvP: " + this.sps$pvpAllowed + " | ")
+                            .append("MOTD: " + this.sps$motd)
+            );
+        } else {
+            message = new TranslationTextComponent("commands.publish.failed");
+        }
 
-    @Inject(method = "init", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/components/EditBox;setResponder(Ljava/util/function/Consumer;)V", shift = At.Shift.AFTER))
-    private void initHook(CallbackInfo ci) {
-        IntegratedServer integratedServer = Objects.requireNonNull(Objects.requireNonNull(this.minecraft).getSingleplayerServer());
-        this.setPort(25565);
-        this.motd = integratedServer.getMotd();
-        this.onlineMode = integratedServer.usesAuthentication();
-        this.pvpAllowed = integratedServer.isPvpAllowed();
-        this.getBox().setX(this.width / 2 + 5);
-        this.getBox().setY(170);
-        this.addRenderableWidget(CycleButton.onOffBuilder(!this.onlineMode).create(this.width / 2 + 5, 130, 150, 20, OFFLINE_MODE, (cycleButton, b) -> this.onlineMode = !b));
-        this.addRenderableWidget(CycleButton.onOffBuilder(this.pvpAllowed).create(this.width / 2 - 155, 130, 150, 20, PVP_ALLOWED, (cycleButton, b) -> this.pvpAllowed = b));
-        EditBox motd = new EditBox(this.font, this.width / 2 - 155, 170, 150, 20, MOTD);
-        motd.setValue(this.motd);
-        motd.setResponder(s -> this.motd = s);
-        this.addRenderableWidget(motd);
+        this.minecraft.gui.getChat().addMessage(message);
+        this.minecraft.setScreen(null);
     }
 
-    @Inject(method = {"lambda$init$2", "method_19851", "m_279789_"}, at = @At(value = "TAIL"), remap = false)
-    private void onServerStart(CallbackInfo ci) {
-        IntegratedServer integratedServer = Objects.requireNonNull(Objects.requireNonNull(this.minecraft).getSingleplayerServer());
-        integratedServer.setUsesAuthentication(onlineMode);
-        integratedServer.setPvpAllowed(pvpAllowed);
-        integratedServer.setMotd(this.motd);
-        this.minecraft.gui.getChat().addMessage(Component.empty().append(OFFLINE_MODE).append(": " + !onlineMode + "    ").append(PVP_ALLOWED).append(": " + pvpAllowed));
-        this.minecraft.gui.getChat().addMessage(Component.empty().append(MOTD).append(": " + this.motd));
+    @Inject(method = "render", at = @At("TAIL"))
+    private void sps$onRender(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks, CallbackInfo ci) {
+        if (this.sps$portField != null) {
+            this.sps$portField.render(matrixStack, mouseX, mouseY, partialTicks);
+            drawString(matrixStack, this.font, PORT_LABEL, this.width / 2 - 155, 158, 0xFFFFFF);
+        }
+        if (this.sps$motdField != null) {
+            this.sps$motdField.render(matrixStack, mouseX, mouseY, partialTicks);
+            drawString(matrixStack, this.font, MOTD_LABEL, this.width / 2 + 5, 158, 0xFFFFFF);
+        }
     }
 
-    @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;drawCenteredString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;III)V", ordinal = 1, shift = At.Shift.AFTER), cancellable = true)
-    private void render(GuiGraphics guiGraphics, int $$1, int $$2, float $$3, CallbackInfo ci) {
-        guiGraphics.drawCenteredString(this.font, PORT_INFO_TEXT_, this.width / 2 + 80, 157, 16777215);
-        guiGraphics.drawCenteredString(this.font, MOTD, this.width / 2 - 80, 157, 16777215);
-        ci.cancel();
+    @Inject(method = "tick", at = @At("HEAD"), remap = false, require = 0)
+    private void sps$onTick(CallbackInfo ci) {
+        if (this.sps$portField != null) {
+            this.sps$portField.tick();
+        }
+        if (this.sps$motdField != null) {
+            this.sps$motdField.tick();
+        }
     }
 
+}
 }
