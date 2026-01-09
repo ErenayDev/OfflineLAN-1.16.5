@@ -1,0 +1,27 @@
+modLoader = "javafml"
+loaderVersion = "[36,)"
+license = "LGPLv2.1"
+issueTrackerURL = "https://github.com/Elecs-Mods/SinglePlayerServerSettings/issues"
+
+[[mods]]
+modId = "singleplayerserversettings"
+version = "${file.jarVersion}"
+displayName = "SinglePlayerServerSettings"
+authors = "Elec332"
+description = '''
+Allows for playing LAN worlds without an active internet connection.
+'''
+
+[[dependencies.singleplayerserversettings]]
+modId = "forge"
+mandatory = true
+versionRange = "[36.2,)"
+ordering = "NONE"
+side = "CLIENT"
+
+[[dependencies.singleplayerserversettings]]
+modId = "minecraft"
+mandatory = true
+versionRange = "[1.16.5,1.17)"
+ordering = "NONE"
+side = "CLIENT"
