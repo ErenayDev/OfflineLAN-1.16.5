@@ -31,7 +31,7 @@ public abstract class ShareToLanScreenMixin extends Screen {
     private GameType gameMode;
 
     @Shadow
-    private boolean commands;
+    private boolean allowCheats;
 
     @Unique
     private boolean sps$onlineMode;
@@ -146,10 +146,10 @@ public abstract class ShareToLanScreenMixin extends Screen {
         server.setPvpAllowed(this.sps$pvpAllowed);
         server.setMotd(this.sps$motd);
 
-        String result = server.publishServer(this.gameMode, this.commands, this.sps$port);
+        boolean success = server.publishServer(this.gameMode, this.allowCheats, this.sps$port);
 
         ITextComponent message;
-        if (result != null) {
+        if (success) {
             message = new TranslationTextComponent("commands.publish.started", this.sps$port);
             this.minecraft.gui.getChat().addMessage(
                     new StringTextComponent("Offline Mode: " + !this.sps$onlineMode + " | PvP: " + this.sps$pvpAllowed + " | MOTD: " + this.sps$motd)
