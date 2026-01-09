@@ -1,9 +1,10 @@
 package nl.elec332.minecraft.singleplayerserversettings;
 
-import nl.elec332.minecraft.loader.mod.Mod;
+import net.minecraftforge.fml.common.Mod;
 
 /**
  * Created by Elec332 on 23-04-2024
+ * Refactored by ErenayDev
  */
 @Mod(SinglePlayerServerSettingsMod.MOD_ID)
 public class SinglePlayerServerSettingsMod {
