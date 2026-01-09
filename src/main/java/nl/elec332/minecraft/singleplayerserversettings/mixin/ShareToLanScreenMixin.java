@@ -1,3 +1,8 @@
+/**
+ * Created by Elec332 on 23-04-2024
+ * Refactored by ErenayDev
+ */
+
 package nl.elec332.minecraft.singleplayerserversettings.mixin;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
@@ -5,11 +10,13 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ShareToLanScreen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.client.server.IntegratedServer;
+import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.world.GameType;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -17,10 +24,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Objects;
 
-/**
- * Created by Elec332 on 23-04-2024
- * Refactored by ErenayDev
- */
 @Mixin(ShareToLanScreen.class)
 public abstract class ShareToLanScreenMixin extends Screen {
 
