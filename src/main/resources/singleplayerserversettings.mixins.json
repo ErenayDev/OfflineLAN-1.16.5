@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "nl.elec332.minecraft.singleplayerserversettings.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "refmap": "singleplayerserversettings.refmap.json",
+  "client": [
+    "ShareToLanScreenMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
