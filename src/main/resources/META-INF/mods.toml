@@ -1,25 +1,25 @@
 modLoader = "javafml"
 loaderVersion = "[36,)"
 license = "LGPLv2.1"
-issueTrackerURL = "https://github.com/Elecs-Mods/SinglePlayerServerSettings/issues"
+issueTrackerURL = "https://github.com/ErenayDev/OfflineLAN-1.16.5/issues"
 
 [[mods]]
-modId = "singleplayerserversettings"
+modId = "offlinelan"
 version = "${file.jarVersion}"
-displayName = "SinglePlayerServerSettings"
-authors = "Elec332"
+displayName = "OfflineLAN 1.16.5"
+authors = "ErenayDev"
 description = '''
-Allows for playing LAN worlds without an active internet connection.
+Adds extra menus to "Open to LAN" section. MOTD, Offline Mode, Port fields
 '''
 
-[[dependencies.singleplayerserversettings]]
+[[dependencies.offlinelan]]
 modId = "forge"
 mandatory = true
 versionRange = "[36.2,)"
 ordering = "NONE"
 side = "CLIENT"
 
-[[dependencies.singleplayerserversettings]]
+[[dependencies.offlinelan]]
 modId = "minecraft"
 mandatory = true
 versionRange = "[1.16.5,1.17)"

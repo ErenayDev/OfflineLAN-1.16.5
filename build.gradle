@@ -28,9 +28,9 @@ minecraft {
             property 'forge.logging.console.level', 'debug'
             property 'mixin.env.remapRefMap', 'true'
             property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
-            arg '-mixin.config=singleplayerserversettings.mixins.json'
+            arg '-mixin.config=offlinelan.mixins.json'
             mods {
-                singleplayerserversettings {
+                offlinelan {
                     source sourceSets.main
                 }
             }
@@ -39,8 +39,8 @@ minecraft {
 }
 
 mixin {
-    add sourceSets.main, "singleplayerserversettings.refmap.json"
-    config "singleplayerserversettings.mixins.json"
+    add sourceSets.main, "offlinelan.refmap.json"
+    config "offlinelan.mixins.json"
 }
 
 repositories {
@@ -61,7 +61,7 @@ jar {
             "Implementation-Title"    : mod_name,
             "Implementation-Version"  : mod_version,
             "Implementation-Vendor"   : mod_authors,
-            "MixinConfigs"            : "singleplayerserversettings.mixins.json"
+            "MixinConfigs"            : "offlinelan.mixins.json"
         ])
     }
 }
